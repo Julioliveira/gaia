@@ -1,0 +1,21 @@
+{
+  "extends": "standard-with-typescript",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "rules": {
+    "no-console": "warn",
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    "@typescript-eslint/no-redeclare": "off",
+    "@typescript-eslint/space-before-function-paren": "off",
+    "@typescript-eslint/method-signature-style": "off",
+    "@typescript-eslint/return-await": "off",
+    "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/no-misused-promises": "off",
+    "import/export": "off",
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/no-explicit-any": ["error"],
+    "@typescript-eslint/no-non-null-assertion": "off"
+  }
+}
