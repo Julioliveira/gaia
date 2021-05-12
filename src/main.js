@@ -15,6 +15,18 @@ async function copyTemplateFiles(options) {
     clobber: false
   })
 }
+async function copyDockerConfigFiles(options) {
+  const currentFileUrl = import.meta.url
+  const dockerConfigDirectory = path.resolve(
+    new URL(currentFileUrl).pathname,
+    '../../templates',
+    options.architecture.toLowerCase(),
+    'docker'
+  )
+  return copy(dockerConfigDirectory, options.targetDirectory, {
+    clobber: false
+  })
+}
 
 async function initGit(options) {
   const result = await execa('git', ['init'], {
@@ -27,8 +39,7 @@ async function initGit(options) {
 }
 
 async function initDir(options) {
-  if (!options.directory)
-    return
+  if (!options.directory) return
   const result = await execa('mkdir', [options.directory], {
     cwd: options.targetDirectory
   })
@@ -51,7 +62,6 @@ export async function createProject(options) {
     options.architecture.toLowerCase(),
     options.template.toLowerCase()
   )
-  console.log(templateDir)
   options.templateDirectory = templateDir
 
   try {
@@ -63,13 +73,18 @@ export async function createProject(options) {
   }
   const tasks = new Listr([
     {
-      title: 'Initialize Directory',
+      title: 'Initializing Directory',
       task: () => initDir(options),
       enabled: () => options.directory
     },
     {
-      title: 'Copy project files',
+      title: 'Copying project files',
       task: () => copyTemplateFiles(options)
+    },
+    {
+      title: 'Copying docker files',
+      task: () => copyDockerConfigFiles(options),
+      enabled: () => options.docker
     },
     {
       title: 'Initialize Git',

@@ -8,6 +8,7 @@ function parseArgumentsIntoOptions(rawArgs) {
       '--yes': Boolean,
       '--install': Boolean,
       '--project': String,
+      '--docker': Boolean,
       '-g': '--git',
       '-y': '--yes',
       '-i': '--install',
@@ -23,7 +24,8 @@ function parseArgumentsIntoOptions(rawArgs) {
     template: args._[0],
     architecture: args._[1],
     runInstall: args['--install'] || false,
-    targetDirectory: args['--project'] || undefined
+    targetDirectory: args['--project'] || undefined,
+    docker: args['--docker'] || false
   }
 }
 
@@ -36,7 +38,7 @@ async function promptForMissingOptions(options) {
       ...options,
       template: options.template || defaultTemplate,
       architecture: options.architecture || defaultArchitecture,
-      targetDirectory: options.targetDirectory || defaultTargetDirectory
+      targetDirectory: options.targetDirectory || defaultTargetDirectory,
     }
   }
 
@@ -80,6 +82,14 @@ async function promptForMissingOptions(options) {
       default: false
     })
   }
+  if (!options.docker) {
+    questions.push({
+      type: 'confirm',
+      name: 'docker',
+      message: 'Create Dockerfile?',
+      default: true
+    })
+  }
 
   const answers = await inquirer.prompt(questions)
   return {
@@ -87,7 +97,8 @@ async function promptForMissingOptions(options) {
     template: options.template || answers.template,
     git: options.git || answers.git,
     architecture: options.architecture || answers.architecture,
-    targetDirectory: options.targetDirectory || answers.project
+    targetDirectory: options.targetDirectory || answers.project,
+    docker: options.docker || answers.docker
   }
 }
 
