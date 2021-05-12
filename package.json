@@ -1,11 +1,10 @@
 {
   "name": "@julioliveiras/gaia",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A CLI to bootstrap a node project",
   "main": "src/index.js",
   "bin": {
-    "@julioliveiras/gaia": "bin/gaia",
-    "gaia": "bin/gaia"
+    "node-gaia": "bin/node-gaia"
   },
   "publishConfig": {
     "access": "public"
@@ -15,11 +14,11 @@
   },
   "keywords": [
     "cli",
-    "gaia",
+    "node-gaia",
     "clean-architecture"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Julio Oliveira",
+  "license": "MIT",
   "dependencies": {
     "arg": "^5.0.0",
     "chalk": "^4.1.1",
@@ -29,5 +28,14 @@
     "listr": "^0.14.3",
     "ncp": "^2.0.0",
     "pkg-install": "^1.0.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Julioliveira/gaia.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Julioliveira/gaia/issues"
+  },
+  "homepage": "https://github.com/Julioliveira/gaia#readme"
 }

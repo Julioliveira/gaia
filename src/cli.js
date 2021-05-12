@@ -12,7 +12,6 @@ function parseArgumentsIntoOptions(rawArgs) {
       '-y': '--yes',
       '-i': '--install',
       '-p': '--project'
-      
     },
     {
       argv: rawArgs.slice(2)
@@ -42,19 +41,11 @@ async function promptForMissingOptions(options) {
   }
 
   const questions = []
-   if (!options.targetDirectory) {
-     questions.push({
-       name: 'project',
-       message: 'Please type the project name',
-       default: defaultTargetDirectory
-     })
-   }
-  if (!options.template) {
+  if (!options.targetDirectory) {
     questions.push({
-      type: 'list',
-      name: 'template',
-      message: 'Please choose which project template to use',
-      choices: ['JavaScript', 'TypeScript']
+      name: 'project',
+      message: 'Please type the project name',
+      default: defaultTargetDirectory
     })
   }
   if (!options.architecture) {
@@ -62,9 +53,25 @@ async function promptForMissingOptions(options) {
       type: 'list',
       name: 'architecture',
       message: 'Please choose which project architecture to use',
-      choices: ['MVC', 'Clean']
+      choices: ['Clean']
     })
   }
+  if (
+    !options.template &&
+    options.architecture &&
+    options.architecture !== 'Clean'
+  ) {
+    questions.push({
+      type: 'list',
+      name: 'template',
+      message: 'Please choose which project template to use',
+      choices: ['JavaScript', 'TypeScript']
+    })
+  }
+  else {
+    options.template = defaultTemplate
+  }
+
   if (!options.git) {
     questions.push({
       type: 'confirm',
