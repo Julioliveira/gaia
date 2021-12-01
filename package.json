@@ -1,6 +1,6 @@
 {
   "name": "@julioliveiras/gaia",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A CLI to bootstrap a node project",
   "main": "src/index.js",
   "bin": {

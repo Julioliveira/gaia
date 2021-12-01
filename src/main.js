@@ -6,7 +6,12 @@ import { promisify } from 'util'
 import execa from 'execa'
 import Listr from 'listr'
 import { projectInstall } from 'pkg-install'
-
+import { createRoute } from '../templates/clean/modules/routes'
+import {
+  createControllerFactory,
+  createUseCaseFactory,
+  createValidationFactory
+} from '../templates/clean/modules/factory'
 const access = promisify(fs.access)
 const copy = promisify(ncp)
 
@@ -15,6 +20,7 @@ async function copyTemplateFiles(options) {
     clobber: false
   })
 }
+
 async function copyDockerConfigFiles(options) {
   const currentFileUrl = import.meta.url
   const dockerConfigDirectory = path.resolve(
@@ -47,6 +53,205 @@ async function initDir(options) {
     return Promise.reject(new Error('Failed to create directory'))
   }
   return
+}
+
+async function createMainRoutesFile(options) {
+  if (!options.directory) return
+
+  fs.writeFile(
+    `${options.directory}/src/main/routes/${options.moduleName}.ts`,
+    createRoute(options),
+    (err) => {
+      if (err) {
+        return Promise.reject(new Error('Failed to write directory'))
+      }
+      fs.readFile(
+        `${options.directory}/src/main/routes/index.ts`,
+        (err, data) => {
+          if (err) throw err
+          let exportText =
+            data.toString() +
+            `export { default as ${options.moduleName}Route } from './${options.moduleName}'\n`
+          fs.writeFile(
+            `${options.directory}/src/main/routes/index.ts`,
+            exportText,
+            (err) => {
+              if (err) {
+                return Promise.reject(new Error('Failed to write index'))
+              }
+              return
+            }
+          )
+        }
+      )
+    }
+  )
+}
+
+async function createControllerFactoryFile(options) {
+  if (!options.directory) return
+  let CRUD = 'read'
+  switch (options.httpMethod) {
+    case 'post':
+      CRUD = 'create'
+      break
+    case 'put':
+      CRUD = 'update'
+      break
+    case 'patch':
+      CRUD = 'update'
+      break
+    case 'delete':
+      CRUD = 'remove'
+      break
+    default:
+      CRUD = 'read'
+      break
+  }
+  try {
+    let result = await execa(
+      'mkdir',
+      [
+        `${options.directory}/src/main/factories/${options.moduleName}`,
+        `${options.directory}/src/main/factories/${options.moduleName}/${CRUD}`
+      ],
+      {
+        cwd: options.targetDirectory
+      }
+    )
+    if (result.failed) {
+      return Promise.reject(new Error('Failed to create directory'))
+    }
+  } catch (err) {
+    if (!err.stderr || !err.stderr.includes('File exists'))
+      return Promise.reject(new Error('Failed to create directory'))
+  }
+  fs.writeFile(
+    `${options.directory}/src/main/factories/${options.moduleName}/${CRUD}/${options.moduleName}ControllerFactory.ts`,
+    createControllerFactory(options),
+    (err) => {
+      if (err) {
+        return Promise.reject(new Error('Failed to write directory'))
+      }
+      // fs.readFile(
+      //   `${options.directory}/src/main/routes/index.ts`,
+      //   (err, data) => {
+      //     if (err) throw err
+      //     let exportText =
+      //       data.toString() +
+      //       `export { default as ${options.moduleName}Route } from './${options.moduleName}'\n`
+      //     fs.writeFile(
+      //       `${options.directory}/src/main/routes/index.ts`,
+      //       exportText,
+      //       (err) => {
+      //         if (err) {
+      //           return Promise.reject(new Error('Failed to write index'))
+      //         }
+      //         return
+      //       }
+      //     )
+      //   }
+      // )
+    }
+  )
+}
+async function createUseCaseFactoryFile(options) {
+  if (!options.directory) return
+  let CRUD = 'read'
+  switch (options.httpMethod) {
+    case 'post':
+      CRUD = 'create'
+      break
+    case 'put':
+      CRUD = 'update'
+      break
+    case 'patch':
+      CRUD = 'update'
+      break
+    case 'delete':
+      CRUD = 'remove'
+      break
+    default:
+      CRUD = 'read'
+      break
+  }
+  try {
+    let result = await execa(
+      'mkdir',
+      [
+        `${options.directory}/src/main/factories/${options.moduleName}`,
+        `${options.directory}/src/main/factories/${options.moduleName}/${CRUD}`
+      ],
+      {
+        cwd: options.targetDirectory
+      }
+    )
+    if (result.failed) {
+      return Promise.reject(new Error('Failed to create directory'))
+    }
+  } catch (err) {
+    if (!err.stderr || !err.stderr.includes('File exists'))
+      return Promise.reject(new Error('Failed to create directory'))
+  }
+  fs.writeFile(
+    `${options.directory}/src/main/factories/${options.moduleName}/${CRUD}/${options.moduleName}UsecaseFactory.ts`,
+    createUseCaseFactory(options),
+    (err) => {
+      if (err) {
+        console.log(err)
+        return Promise.reject(new Error('Failed to write directory'))
+      }
+      // fs.readFile(
+      //   `${options.directory}/src/main/routes/index.ts`,
+      //   (err, data) => {
+      //     if (err) throw err
+      //     let exportText =
+      //       data.toString() +
+      //       `export { default as ${options.moduleName}Route } from './${options.moduleName}'\n`
+      //     fs.writeFile(
+      //       `${options.directory}/src/main/routes/index.ts`,
+      //       exportText,
+      //       (err) => {
+      //         if (err) {
+      //           return Promise.reject(new Error('Failed to write index'))
+      //         }
+      //         return
+      //       }
+      //     )
+      //   }
+      // )
+    }
+  )
+}
+
+async function editConfigRoutesFile(options) {
+  if (!options.directory) return
+
+  fs.readFile(`${options.directory}/src/main/config/routes.ts`, (err, data) => {
+    if (err) throw err
+    const stringData = data.toString()
+    const importIndex = stringData.indexOf(" } from '../routes'")
+    const routeIndex = stringData.indexOf('app.use(router)')
+    let exportText =
+      stringData.substring(0, routeIndex) +
+      `  ${options.moduleName}Route(router)\n  ` +
+      stringData.substring(routeIndex)
+
+    exportText =
+      exportText.substring(0, importIndex) +
+      `, ${options.moduleName}Route` +
+      exportText.substring(importIndex)
+    fs.writeFile(
+      `${options.directory}/src/main/config/routes.ts`,
+      exportText,
+      (err) => {
+        if (err) {
+          return Promise.reject(new Error('Failed to write routes.ts'))
+        }
+        return
+      }
+    )
+  })
 }
 
 export async function createProject(options) {
@@ -101,6 +306,36 @@ export async function createProject(options) {
         !options.runInstall
           ? 'Pass --install to automatically install dependencies'
           : undefined
+    }
+  ])
+  await tasks.run()
+  console.log('%s Project ready', chalk.green.bold('DONE'))
+  return true
+}
+
+export async function createModule(options) {
+  options.directory = process.cwd()
+  console.log(options)
+  const tasks = new Listr([
+    {
+      title: 'Creating main/routes file',
+      task: () => createMainRoutesFile(options),
+      enabled: () => options.directory
+    },
+    {
+      title: 'Edit main/config/routes',
+      task: () => editConfigRoutesFile(options),
+      enabled: () => options.directory
+    },
+    {
+      title: 'Creating controller factory',
+      task: () => createControllerFactoryFile(options),
+      enabled: () => options.directory
+    },
+    {
+      title: 'Creating usecase factory',
+      task: () => createUseCaseFactoryFile(options),
+      enabled: () => options.directory
     }
   ])
   await tasks.run()
